@@ -1,0 +1,209 @@
+<html>
+
+<head>
+    <title>My A-Frame Scene</title>
+    <script src="https://aframe.io/releases/0.2.0/aframe.js"></script>
+    <script src="https://rawgit.com/mayognaise/aframe-gif-shader/master/dist/aframe-gif-shader.min.js"></script>
+    <script src="https://rawgit.com/mayognaise/aframe-gif-component/master/dist/aframe-gif-component.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
+</head>
+
+<body>
+    <a-scene>
+        <!--a-sky src="pusheen.png"></a-sky-->
+        <a-entity id="camera" position="0 -0.4 2" rotation="0 0 0">
+            <a-camera cursor-visible="true" cursor-scale="2" 　near="0.01" far="10000" fov="40" wasd-controls-enabled="false" cursor-opacity="0.5">
+            </a-camera>
+        </a-entity>
+        <a-image id="player" src="" rotation="0 0 0" position="0 -0.3 0" width="0.15" height="0.3"></a-image>
+        <!--a-imageだとプレイヤーと重なった時にプレイヤーの余白が透明にならないのでa-cubeを使用-->
+        <a-box id="field" src="d3.png" rotation="0 0 0" width="10" height="0" depth="10" position="0 -0.45 0"></a-box>
+    </a-scene>
+    <script>
+        let Dir = {
+            left: false,
+            flont: false,
+            right: false,
+            back: false
+        };
+        let AnimeCount = -1;
+        let PlayerImage = new Array(16);
+        for (let i = 0; i < 16; i++) {
+            PlayerImage[i] = "player/" + (i + 10) + ".png";
+        }
+        let BlocksNum = 0;
+        let Max = 7;
+        let Map = new Array(Max);
+        for (let i = 0; i < Max; i++) {
+            Map[i] = new Array(Max);
+        }
+
+        function MakeBlock(x, y, z, h, w, d, color, id) {
+            let scene = document.querySelector('a-scene');
+            let box = document.createElement('a-box');
+            box.setAttribute('color', color);
+            box.setAttribute('height', h);
+            box.setAttribute('width', w);
+            box.setAttribute('depth', d);
+            box.setAttribute('id', id);
+            box.setAttribute('position', x + " " + y + " " + z);
+            scene.appendChild(box);
+            BlocksNum++;
+        }
+
+        function Collision2D(x, z, r) {
+            for (let i = 0; i < BlocksNum; i++) {
+                let pos = $("#" + i).attr("position");
+                let w = $("#" + i).attr("width");
+                let d = $("#" + i).attr("depth");
+                if ((x - r < (pos.x + w / 2)) && (x + r > (pos.x - w / 2)) && (z - r < (pos.z + d / 2)) && (z + r > (pos.z - d / 2))) {
+                    //console.log("a");
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /*迷路生成*/
+        function MakeMap(x,y) {
+            /*初期化*/
+            for (let i = 0; i < x; i++) {
+                for (let j = 0; j < y; j++) {
+                    Map[i][j] = 0;
+                }
+            }
+
+            for (let i = 0; i < x; i++) {
+                for (let j = 0; j < y; j++) {
+                    let dec = false;
+                    if (i % 2 == 1 && j == 1) {
+                        Map[i][j] = 1;
+                        let dir = Math.floor(Math.random() * 4);
+                        let xkouho = [0, 1, 0, -1];
+                        let ykouho = [-1, 0, 1, 0];
+                        while (!dec) {
+                            if (Map[i + xkouho[dir]][j + ykouho[dir]] == 0) {
+                                Map[i + xkouho[dir]][j + ykouho[dir]] = 1;
+                                dec = true;
+                            } else {
+                                dec = false;
+                                dir++;
+                                dir %= 4;
+                            }
+                        }
+                    } else if (i % 2 == 1 && j % 2 == 1) {
+                        Map[i][j] = 1;
+                        let dir = Math.floor(Math.random() * 3);
+                        let xkouho = [1, 0, -1];
+                        let ykouho = [0, 1, 0];
+                        while (!dec) {
+                            console.log(dir);
+                            if (Map[i + xkouho[dir]][j + ykouho[dir]] == 0) {
+                                Map[i + xkouho[dir]][j + ykouho[dir]] = 1;
+                                dec = true;
+                            } else {
+                                dec = false;
+                                dir++;
+                                dir %= 3;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function Collision2D(x, z, r) {
+            for (let i = 0; i < BlocksNum; i++) {
+                let pos = $("#" + i).attr("position");
+                let w = $("#" + i).attr("width");
+                let d = $("#" + i).attr("depth");
+                if ((x - r < (pos.x + w / 2)) && (x + r > (pos.x - w / 2)) && (z - r < (pos.z + d / 2)) && (z + r > (pos.z - d / 2))) {
+                    console.log("a");
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        MakeMap(Max,Max);
+        for (let i = 0; i < Max; i++) {
+            for (let j = 0; j < Max; j++) {
+                if(Map[i][j]==1)MakeBlock(i, 0, j, 1, 1, 1, "blue", BlocksNum);
+            }
+        }
+        
+        MakeBlock(Max-1,0,Max-1, 0.2, 0.2, 0.2, "pink", BlocksNum);//ゴール
+        
+         for (let i = 0; i < Max; i++) {
+            MakeBlock(i, 0, -1, 1, 1, 1, "red", BlocksNum);
+            MakeBlock(i, 0, Max, 1, 1, 1, "red", BlocksNum);
+            console.log(Map[i]);
+        }
+        
+        for (let j = 0; j < Max; j++) {
+            MakeBlock(-1, 0, j, 1, 1, 1, "red", BlocksNum);
+            MakeBlock(Max, 0, j, 1, 1, 1, "red", BlocksNum);
+        }
+
+
+        setInterval(() => {
+            let CameraPos = $("#camera").attr("position"); //カメラの位置を取得
+            let CameraRota = $("#camera").attr("rotation"); //カメラの位置を取得
+            let PlayerPos = $("#player").attr("position"); //カメラの位置を取得
+
+            if (Dir.left) {
+                CameraRota.y += 5;
+            }
+            if (Dir.front) {
+                //if(PlayerPos.z-)
+                if (!Collision2D(PlayerPos.x - 0.05 * Math.sin(Math.PI * (CameraRota.y) / 180), PlayerPos.z - 0.05 * Math.cos(Math.PI * (CameraRota.y) / 180), 0.05)) {
+                    PlayerPos.x -= 0.05 * Math.sin(Math.PI * (CameraRota.y) / 180);
+                    PlayerPos.z -= 0.05 * Math.cos(Math.PI * (CameraRota.y) / 180);
+                    AnimeCount += 0.5;
+                    AnimeCount %= 15;
+                } else AnimeCount = -1;
+            }
+            if (Dir.right) {
+                CameraRota.y -= 5;
+            }
+
+            $("#player").attr("src", PlayerImage[1 + AnimeCount]);
+
+
+            $("#player").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
+
+            $("#player").attr("position", (PlayerPos.x) + " " + PlayerPos.y + " " + PlayerPos.z);
+
+            $("#camera").attr("position", (PlayerPos.x + 0.8*Math.cos(Math.PI * (-CameraRota.y + 90) / 180)) + " " + PlayerPos.y + " " + (PlayerPos.z +  0.8*Math.sin(Math.PI * (-CameraRota.y + 90) / 180)));
+            $("#camera").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
+        }, 1000 / 30);
+
+        $(window).keydown(function(e) {
+            if (e.keyCode == 37) {
+                Dir.left = true;
+            }
+            if (e.keyCode == 38) {
+                if (!Dir.front) AnimeCount = 0;
+                Dir.front = true;
+            }
+            if (e.keyCode == 39) {
+                Dir.right = true;
+            }
+        });
+
+        $(window).keyup(function(e) {
+            if (e.keyCode == 37) {
+                Dir.left = false;
+            }
+            if (e.keyCode == 38) {
+                Dir.front = false;
+                AnimeCount = -1;
+            }
+            if (e.keyCode == 39) {
+                Dir.right = false;
+            }
+        });
+    </script>
+</body>
+
+</html>
