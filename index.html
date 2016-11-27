@@ -147,16 +147,12 @@
 
         window.addEventListener('deviceorientation', function(event) { //デバイスの傾きや方角の値が変化したとき
             let CameraRota = $("#camera").attr("rotation"); //カメラの位置を取得
-            if (Math.pow(LastDir - event.alpha, 2) > 10) {
+            if (Math.pow(LastDir - event.alpha, 2) > 20) {
                 CameraRota.y = Math.floor(event.alpha / 4) * 4;
                 LastDir = Math.floor(event.alpha/ 4) * 4;
             }
             $("#camera").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
             
-            if (event.alpha > 30) {
-                Dir.front = true;
-            }
-            else Dir.front = false;
         });
         
 
