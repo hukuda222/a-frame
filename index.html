@@ -152,7 +152,13 @@
                 LastDir = Math.floor(event.alpha/ 4) * 4;
             }
             $("#camera").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
+            
+            if (event.gamma > 30) {
+                Dir.front = true;
+            }
+            else Dir.front = false;
         });
+        
 
         setInterval(() => {
             let CameraPos = $("#camera").attr("position"); //カメラの位置を取得
