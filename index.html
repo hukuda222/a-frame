@@ -63,7 +63,7 @@
         }
 
         /*迷路生成*/
-        function MakeMap(x,y) {
+        function MakeMap(x, y) {
             /*初期化*/
             for (let i = 0; i < x; i++) {
                 for (let j = 0; j < y; j++) {
@@ -123,21 +123,21 @@
             return false;
         }
 
-        MakeMap(Max,Max);
+        MakeMap(Max, Max);
         for (let i = 0; i < Max; i++) {
             for (let j = 0; j < Max; j++) {
-                if(Map[i][j]==1)MakeBlock(i, 0, j, 1, 1, 1, "blue", BlocksNum);
+                if (Map[i][j] == 1) MakeBlock(i, 0, j, 1, 1, 1, "blue", BlocksNum);
             }
         }
-        
-        MakeBlock(Max-1,0,Max-1, 0.2, 0.2, 0.2, "pink", BlocksNum);//ゴール
-        
-         for (let i = 0; i < Max; i++) {
+
+        MakeBlock(Max - 1, 0, Max - 1, 0.2, 0.2, 0.2, "pink", BlocksNum); //ゴール
+
+        for (let i = 0; i < Max; i++) {
             MakeBlock(i, 0, -1, 1, 1, 1, "red", BlocksNum);
             MakeBlock(i, 0, Max, 1, 1, 1, "red", BlocksNum);
             console.log(Map[i]);
         }
-        
+
         for (let j = 0; j < Max; j++) {
             MakeBlock(-1, 0, j, 1, 1, 1, "red", BlocksNum);
             MakeBlock(Max, 0, j, 1, 1, 1, "red", BlocksNum);
@@ -172,7 +172,7 @@
 
             $("#player").attr("position", (PlayerPos.x) + " " + PlayerPos.y + " " + PlayerPos.z);
 
-            $("#camera").attr("position", (PlayerPos.x + 0.8*Math.cos(Math.PI * (-CameraRota.y + 90) / 180)) + " " + PlayerPos.y + " " + (PlayerPos.z +  0.8*Math.sin(Math.PI * (-CameraRota.y + 90) / 180)));
+            $("#camera").attr("position", (PlayerPos.x + 0.8 * Math.cos(Math.PI * (-CameraRota.y + 90) / 180)) + " " + PlayerPos.y + " " + (PlayerPos.z + 0.8 * Math.sin(Math.PI * (-CameraRota.y + 90) / 180)));
             $("#camera").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
         }, 1000 / 30);
 
@@ -201,10 +201,13 @@
                 Dir.right = false;
             }
         });
-        
-        window.addEventListener('deviceorientation', function(event){ //デバイスの傾きや方角の値が変化したときに発火
-    alert(event.beta); // event.betaで上下方向の傾きの値を取得
-});
+
+        window.addEventListener('deviceorientation', function(event) { //デバイスの傾きや方角の値が変化したとき
+            let CameraRota = $("#camera").attr("rotation"); //カメラの位置を取得
+            CameraRota.y+=event.beta;
+            $("#player").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
+            $("#camera").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
+        });
     </script>
 </body>
 
