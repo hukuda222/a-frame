@@ -31,7 +31,7 @@
         }
         let BlocksNum = 0;
         let Max = 3;
-        let LastDir=0; 
+        let LastDir = 0;
         let Map = new Array(Max);
         for (let i = 0; i < Max; i++) {
             Map[i] = new Array(Max);
@@ -145,18 +145,20 @@
         }
 
 
+        window.addEventListener('deviceorientation', function(event) { //デバイスの傾きや方角の値が変化したとき
+            let CameraRota = $("#camera").attr("rotation"); //カメラの位置を取得
+            if (Math.pow(LastDir - event.beta, 2) > 10) {
+                CameraRota.y = Math.floor(event.beta / 4) * 4;
+                LastDir = Math.floor(event.beta / 4) * 4;
+            }
+            $("#camera").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
+        });
+
         setInterval(() => {
             let CameraPos = $("#camera").attr("position"); //カメラの位置を取得
             let CameraRota = $("#camera").attr("rotation"); //カメラの位置を取得
-            let PlayerPos = $("#player").attr("position"); //カメラの位置を取得
-            
-            window.addEventListener('deviceorientation', function(event) { //デバイスの傾きや方角の値が変化したとき
-                if(Math.pow(LastDir-event.beta,2)>10){
-                    CameraRota.y = Math.floor(event.beta/4)*4;
-                    LastDir = Math.floor(event.beta/4)*4;
-                }
-            });            
-            
+            let PlayerPos = $("#player").attr("position"); //カメラの位置を取得         
+
             CameraRota.x = 0;
             CameraRota.z = 0;
             if (Dir.left) {
@@ -184,7 +186,7 @@
 
             $("#camera").attr("position", (PlayerPos.x + 0.8 * Math.cos(Math.PI * (-CameraRota.y + 90) / 180)) + " " + PlayerPos.y + " " + (PlayerPos.z + 0.8 * Math.sin(Math.PI * (-CameraRota.y + 90) / 180)));
             $("#camera").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
-            
+
             console.log(CameraRota);
         }, 1000 / 30);
 
@@ -215,5 +217,4 @@
         });
     </script>
 </body>
-
 </html>
