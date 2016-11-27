@@ -151,13 +151,11 @@
                 CameraRota.y = Math.floor(event.alpha / 4) * 4;
                 LastDir = Math.floor(event.alpha/ 4) * 4;
             }
-            $("#camera").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
-            
-            if (event.beta > 60) {
-                console.log(event.beta);
-                Dir.front = true;
+            if ( event.gamma> 40) {
+                Dir.flont=true;
             }
-            else Dir.front = false;
+            else Dir.flont=false;
+            $("#camera").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
         });
         
 
