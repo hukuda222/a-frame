@@ -10,7 +10,7 @@
     <a-scene>
         <!--a-sky src="pusheen.png"></a-sky-->
         <a-entity id="camera" position="0 -0.4 2" rotation="0 180 0">
-            <a-camera cursor-visible="true" cursor-scale="2" near="0.01" far="10000" fov="40" wasd-controls-enabled="false" cursor-opacity="0.5">
+            <a-camera cursor-visible="true" cursor-scale="2" near="0.01" far="10000" fov="40" look-controls-enabled="false" wasd-controls-enabled="false" cursor-opacity="0.5">
             </a-camera>
         </a-entity>
         <a-image id="player" src="" rotation="0 0 0" position="0 -0.27 0" width="0.2" height="0.4"></a-image>
@@ -31,6 +31,7 @@
         }
         let BlocksNum = 0;
         let Max = 3;
+        let LastDir=0; 
         let Map = new Array(Max);
         for (let i = 0; i < Max; i++) {
             Map[i] = new Array(Max);
@@ -145,17 +146,17 @@
 
 
         setInterval(() => {
-            /*window.addEventListener('deviceorientation', function(event) { //デバイスの傾きや方角の値が変化したとき
-                let CameraRota = $("#camera").attr("rotation"); //カメラの位置を取得
-                CameraRota.y += Math.floor(event.beta/4)*4;
-                $("#player").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
-                $("#camera").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
-            });*/
-
             let CameraPos = $("#camera").attr("position"); //カメラの位置を取得
             let CameraRota = $("#camera").attr("rotation"); //カメラの位置を取得
             let PlayerPos = $("#player").attr("position"); //カメラの位置を取得
-
+            
+            window.addEventListener('deviceorientation', function(event) { //デバイスの傾きや方角の値が変化したとき
+                if(Math.pow(LastDir-event.beta,2)>10){
+                    CameraRota.y = Math.floor(event.beta/4)*4;
+                    LastDir = Math.floor(event.beta/4)*4;
+                }
+            });            
+            
             CameraRota.x = 0;
             CameraRota.z = 0;
             if (Dir.left) {
@@ -183,6 +184,8 @@
 
             $("#camera").attr("position", (PlayerPos.x + 0.8 * Math.cos(Math.PI * (-CameraRota.y + 90) / 180)) + " " + PlayerPos.y + " " + (PlayerPos.z + 0.8 * Math.sin(Math.PI * (-CameraRota.y + 90) / 180)));
             $("#camera").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
+            
+            console.log(CameraRota);
         }, 1000 / 30);
 
         $(window).keydown(function(e) {
