@@ -20,7 +20,7 @@
     <script>
         let Dir = {
             left: false,
-            flont: false,
+            front: false,
             right: false,
             back: false
         };
@@ -151,10 +151,10 @@
                 CameraRota.y = Math.floor(event.alpha / 4) * 4;
                 LastDir = Math.floor(event.alpha/ 4) * 4;
             }
-            if ( event.beta> 40) {
-                Dir.flont=true;
+            if ( event.beta> 20) {
+                Dir.front=true;
             }
-            else Dir.flont=false;
+            else Dir.front=false;
             $("#camera").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
         });
         
