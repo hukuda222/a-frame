@@ -145,6 +145,14 @@
 
 
         setInterval(() => {
+                window.addEventListener('deviceorientation', function(event) { //デバイスの傾きや方角の値が変化したとき
+            let CameraRota = $("#camera").attr("rotation"); //カメラの位置を取得
+            CameraRota.y+=Math.floor(event.beta);
+            $("#player").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
+            $("#camera").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
+        });
+            
+            
             let CameraPos = $("#camera").attr("position"); //カメラの位置を取得
             let CameraRota = $("#camera").attr("rotation"); //カメラの位置を取得
             let PlayerPos = $("#player").attr("position"); //カメラの位置を取得
@@ -200,13 +208,6 @@
             if (e.keyCode == 39) {
                 Dir.right = false;
             }
-        });
-
-        window.addEventListener('deviceorientation', function(event) { //デバイスの傾きや方角の値が変化したとき
-            let CameraRota = $("#camera").attr("rotation"); //カメラの位置を取得
-            CameraRota.y+=event.beta;
-            $("#player").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
-            $("#camera").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
         });
     </script>
 </body>
