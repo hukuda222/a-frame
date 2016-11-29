@@ -14,7 +14,7 @@
             </a-camera>
         </a-entity>
         <a-image id="player" src="" rotation="0 0 0" position="0 -0.27 0" width="0.2" height="0.4"></a-image>
-        <!--a-imageだとプレイヤーと重なった時にプレイヤーの余白が透明にならないのでa-cubeを使用-->
+        <!--a-imageだと、a-image同士が重なった時に余白が透明にならないのでa-boxを使用-->
         <a-box id="field" src="d3.png" rotation="0 0 0" width="10" height="0" depth="10" position="0 -0.45 0"></a-box>
     </a-scene>
     <script>
@@ -37,6 +37,10 @@
             Map[i] = new Array(Max);
         }
 
+        if (navigator.userAgent.indexOf('iPhone') > 0 || navigator.userAgent.indexOf('iPad') > 0 || navigator.userAgent.indexOf('iPod') > 0 || navigator.userAgent.indexOf('Android') > 0) {
+            Dir.front = true;  //スマホだったら勝手に前進する
+        }
+        
         function MakeBlock(x, y, z, h, w, d, color, id) {
             let scene = document.querySelector('a-scene');
             let box = document.createElement('a-box');
