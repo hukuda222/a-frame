@@ -1,46 +1,53 @@
+<!DOCTYPE html>
 <html>
 
 <head>
-    <title>My A-Frame Scene</title>
+    <title>ChinoMeiro</title>
     <script src="https://aframe.io/releases/0.2.0/aframe.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 </head>
 
 <body>
     <a-scene>
-        <!--a-sky src="pusheen.png"></a-sky-->
         <a-entity id="camera" position="0 -0.4 2" rotation="0 180 0">
             <a-camera cursor-visible="true" cursor-scale="2" near="0.01" far="10000" fov="40" look-controls-enabled="false" wasd-controls-enabled="false" cursor-opacity="0.5">
             </a-camera>
         </a-entity>
-        <a-image id="player" src="" rotation="0 0 0" position="0 -0.27 0" width="0.2" height="0.4"></a-image>
-        <!--a-imageだと、a-image同士が重なった時に余白が透明にならないのでa-boxを使用-->
+        <a-image id="player" src="" rotation="0 0 0" position="0 -0.3 0" width="0.2" height="0.4"></a-image>
+        <!--ここで画像を読み込んでおく-->
+        <a-assets></a-assets>
     </a-scene>
     <script>
+        //left、rightがtrueならその方向に旋回中、frontがtrueなら前進中
         let Dir = {
             left: false,
             front: false,
             right: false,
-            back: false
         };
+        //静止状態なら-1、そうじゃないなら、0~15の値をとる
         let AnimeCount = -1;
-        let PlayerImage = new Array(16);
+
+        //<a-assets>にあらかじめ使う歩行pngファイルを読み込んでおく
         for (let i = 0; i < 16; i++) {
-            PlayerImage[i] = "player/" + (i + 10) + ".png";
+            $("<img id='chino" + i + "' src=" + "'player/" + (i + 10) + ".png' >").appendTo("a-assets")
         }
+        //ブロックの総数
         let BlocksNum = 0;
-        let Max = 3;
+        //迷路に使う一辺のブロック数(奇数でないといけない)
+        let Max = 5;
+        //最後に向いた方向
         let LastDir = 0;
+        //迷路におけるブロックの配置に使う二次元配列の作成
         let Map = new Array(Max);
         for (let i = 0; i < Max; i++) {
             Map[i] = new Array(Max);
         }
 
         if (navigator.userAgent.indexOf('iPhone') > 0 || navigator.userAgent.indexOf('iPad') > 0 || navigator.userAgent.indexOf('iPod') > 0 || navigator.userAgent.indexOf('Android') > 0) {
-            Dir.front = true;  //スマホだったら勝手に前進する
+            Dir.front = true; //スマホだったら勝手に前進する
         }
-        
-        
+
+        //ブロックを作るコンストラクタ
         function MakeBlock(x, y, z, h, w, d, color, id) {
             let scene = document.querySelector('a-scene');
             let box = document.createElement('a-box');
@@ -54,28 +61,14 @@
             BlocksNum++;
         }
 
-        function Collision2D(x, z, r) {
-            for (let i = 0; i < BlocksNum; i++) {
-                let pos = $("#" + i).attr("position");
-                let w = $("#" + i).attr("width");
-                let d = $("#" + i).attr("depth");
-                if ((x - r < (pos.x + w / 2)) && (x + r > (pos.x - w / 2)) && (z - r < (pos.z + d / 2)) && (z + r > (pos.z - d / 2))) {
-                    //console.log("a");
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /*迷路生成*/
-        function MakeMap(x, y) {
-            /*初期化*/
+        //迷路を生成、スマホでやると難易度が跳ね上がるので棒倒し法で作っている
+        function MakeMap(x, y, Map) {
+            ///初期化
             for (let i = 0; i < x; i++) {
                 for (let j = 0; j < y; j++) {
                     Map[i][j] = 0;
                 }
             }
-
             for (let i = 0; i < x; i++) {
                 for (let j = 0; j < y; j++) {
                     let dec = false;
@@ -85,6 +78,7 @@
                         let xkouho = [0, 1, 0, -1];
                         let ykouho = [-1, 0, 1, 0];
                         while (!dec) {
+                            dir = Math.floor(Math.random() * 4);
                             if (Map[i + xkouho[dir]][j + ykouho[dir]] == 0) {
                                 Map[i + xkouho[dir]][j + ykouho[dir]] = 1;
                                 dec = true;
@@ -100,7 +94,7 @@
                         let xkouho = [1, 0, -1];
                         let ykouho = [0, 1, 0];
                         while (!dec) {
-                            console.log(dir);
+                            dir = Math.floor(Math.random() * 3);
                             if (Map[i + xkouho[dir]][j + ykouho[dir]] == 0) {
                                 Map[i + xkouho[dir]][j + ykouho[dir]] = 1;
                                 dec = true;
@@ -113,52 +107,58 @@
                     }
                 }
             }
+            return Map
         }
 
-        function Collision2D(x, z, r) {
-            for (let i = 0; i < BlocksNum; i++) {
-                let pos = $("#" + i).attr("position");
-                let w = $("#" + i).attr("width");
-                let d = $("#" + i).attr("depth");
-                if ((x - r < (pos.x + w / 2)) && (x + r > (pos.x - w / 2)) && (z - r < (pos.z + d / 2)) && (z + r > (pos.z - d / 2))) {
-                    console.log("a");
-                    return true;
-                }
-            }
-            return false;
-        }
 
-        MakeMap(Max, Max);
+        Map = MakeMap(Max, Max, Map);
+
+        //ブロックを配置
         for (let i = 0; i < Max; i++) {
             for (let j = 0; j < Max; j++) {
                 if (Map[i][j] == 1) MakeBlock(i, 0, j, 1, 1, 1, "blue", BlocksNum);
             }
         }
 
-        MakeBlock(Max - 1, 0, Max - 1, 0.2, 0.2, 0.2, "pink", BlocksNum); //ゴール
+        //ゴールにピンクのブロックを配置
+        MakeBlock(Max - 1, -0.2, Max - 1, 0.2, 0.2, 0.2, "pink", BlocksNum);
 
+
+        //外壁の作成
         for (let i = 0; i < Max; i++) {
             MakeBlock(i, 0, -1, 1, 1, 1, "red", BlocksNum);
             MakeBlock(i, 0, Max, 1, 1, 1, "red", BlocksNum);
-            console.log(Map[i]);
         }
-
         for (let j = 0; j < Max; j++) {
             MakeBlock(-1, 0, j, 1, 1, 1, "red", BlocksNum);
             MakeBlock(Max, 0, j, 1, 1, 1, "red", BlocksNum);
         }
 
+        //簡易の当たり判定、ブロックとぶつかっていればtrue、そうでないならfalseを返す
+        function Collision2D(x, z, r, BlocksNum) {
+            for (let i = 0; i < BlocksNum; i++) {
+                let pos = $("#" + i).attr("position");
+                let w = $("#" + i).attr("width");
+                let d = $("#" + i).attr("depth");
+                if ((x - r < (pos.x + w / 2)) && (x + r > (pos.x - w / 2)) && (z - r < (pos.z + d / 2)) && (z + r > (pos.z - d / 2))) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
-        window.addEventListener('deviceorientation',function(event) { //デバイスの傾きや方角の値が変化したとき
+        //スマホ用の処理
+        window.addEventListener('deviceorientation', function(event) { //デバイスの傾きや方角の値が変化したとき
             let CameraRota = $("#camera").attr("rotation"); //カメラの位置を取得
-            if (Math.pow(LastDir - event.alpha, 2) > 10) {
+            if (Math.pow(LastDir - event.alpha, 2) > 25) {
                 CameraRota.y = Math.floor(event.alpha / 4) * 4;
-                LastDir = Math.floor(event.alpha/ 4) * 4;
+                LastDir = Math.floor(event.alpha / 4) * 4;
             }
             $("#camera").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
         });
-        
 
+
+        //30FPSで毎フレーム呼び出す処理
         setInterval(() => {
             let CameraPos = $("#camera").attr("position"); //カメラの位置を取得
             let CameraRota = $("#camera").attr("rotation"); //カメラの位置を取得
@@ -170,29 +170,27 @@
                 CameraRota.y += 5;
             }
             if (Dir.front) {
-                //if(PlayerPos.z-)
-                if (!Collision2D(PlayerPos.x - 0.05 * Math.sin(Math.PI * (CameraRota.y) / 180), PlayerPos.z - 0.05 * Math.cos(Math.PI * (CameraRota.y) / 180), 0.05)) {
+                //前進している場合は当たり判定
+                if (!Collision2D(PlayerPos.x - 0.05 * Math.sin(Math.PI * (CameraRota.y) / 180), PlayerPos.z - 0.05 * Math.cos(Math.PI * (CameraRota.y) / 180), 0.05, BlocksNum)) {
                     PlayerPos.x -= 0.05 * Math.sin(Math.PI * (CameraRota.y) / 180);
                     PlayerPos.z -= 0.05 * Math.cos(Math.PI * (CameraRota.y) / 180);
-                    AnimeCount += 0.5;
+                    AnimeCount += 0.5; //1ずつ加えると早歩きになってしまうため0.5ずつ足す
                     AnimeCount %= 15;
-                } else AnimeCount = -1;
+                } else AnimeCount = -1; //ぶつかっていれば歩行モーション停止
             }
             if (Dir.right) {
                 CameraRota.y -= 5;
             }
 
-            $("#player").attr("src", PlayerImage[1 + AnimeCount]);
 
-
+            $("#player").attr("src", "#chino" + (Math.floor(AnimeCount + 1)));
             $("#player").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
-
             $("#player").attr("position", (PlayerPos.x) + " " + PlayerPos.y + " " + PlayerPos.z);
 
+            //常にカメラがプレイヤーを後ろから見るようにカメラを動かす
             $("#camera").attr("position", (PlayerPos.x + 0.8 * Math.cos(Math.PI * (-CameraRota.y + 90) / 180)) + " " + PlayerPos.y + " " + (PlayerPos.z + 0.8 * Math.sin(Math.PI * (-CameraRota.y + 90) / 180)));
             $("#camera").attr("rotation", (CameraRota.x) + " " + CameraRota.y + " " + CameraRota.z);
 
-            console.log(CameraRota);
         }, 1000 / 30);
 
         $(window).keydown(function(e) {
@@ -222,4 +220,5 @@
         });
     </script>
 </body>
+
 </html>
